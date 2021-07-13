@@ -495,7 +495,7 @@ controller_interface::return_type ControllerManager::switch_controller(
       std::find(start_request_.begin(), start_request_.end(), controller.info.name);
     bool in_start_list = start_list_it != start_request_.end();
 
-    const bool is_running = is_controller_active(*controller.c);
+    const bool is_active = is_controller_active(*controller.c);
     const bool is_inactive = is_controller_inactive(*controller.c);
 
     auto handle_conflict = [&](const std::string & msg) {
