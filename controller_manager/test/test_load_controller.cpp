@@ -493,6 +493,100 @@ TEST_F(TestLoadController, starting_and_stopping_a_controller)
     ASSERT_EQ(
       lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE, controller_if->get_current_state().id());
   }
+
+  {  //  Test stopping a finalized controller
+    std::vector<std::string> start_controllers = {};
+    std::vector<std::string> stop_controllers = {controller_name1};
+
+    abstract_test_controller1.c->shutdown();
+
+    ASSERT_EQ(
+      lifecycle_msgs::msg::State::PRIMARY_STATE_FINALIZED,
+      abstract_test_controller1.c->get_current_state().id());
+
+    EXPECT_EQ(
+      controller_interface::return_type::ERROR,
+      cm_->switch_controller(
+        start_controllers, stop_controllers,
+        STRICT, true, rclcpp::Duration(0, 0))
+    ) << "STRICT switch with stopped controller specified";
+
+    EXPECT_EQ(
+      controller_interface::return_type::OK,
+      cm_->switch_controller(
+        start_controllers, stop_controllers,
+        BEST_EFFORT, true, rclcpp::Duration(0, 0))
+    ) << "BEST_EFFORT switch stopped controller specified";
+
+    auto switch_future = std::async(
+      std::launch::async,
+      &controller_manager::ControllerManager::switch_controller, cm_,
+      start_controllers, stop_controllers,
+      STRICT, true, rclcpp::Duration(0, 0));
+
+    ASSERT_EQ(
+      std::future_status::timeout,
+      switch_future.wait_for(std::chrono::milliseconds(100))) <<
+      "switch_controller should be blocking until next update cycle";
+    {
+      ControllerManagerRunner cm_runner(this);
+      EXPECT_EQ(
+        controller_interface::return_type::OK,
+        switch_future.get()
+      );
+    }
+
+    ASSERT_EQ(
+      lifecycle_msgs::msg::State::PRIMARY_STATE_FINALIZED,
+      abstract_test_controller1.c->get_current_state().id());
+  }
+
+  {  //  Test starting a finalized controller
+    std::vector<std::string> start_controllers = {controller_name1};
+    std::vector<std::string> stop_controllers = {};
+
+    abstract_test_controller1.c->shutdown();
+
+    ASSERT_EQ(
+      lifecycle_msgs::msg::State::PRIMARY_STATE_FINALIZED,
+      abstract_test_controller1.c->get_current_state().id());
+
+    EXPECT_EQ(
+      controller_interface::return_type::ERROR,
+      cm_->switch_controller(
+        start_controllers, stop_controllers,
+        STRICT, true, rclcpp::Duration(0, 0))
+    ) << "STRICT switch with stopped controller specified";
+
+    EXPECT_EQ(
+      controller_interface::return_type::OK,
+      cm_->switch_controller(
+        start_controllers, stop_controllers,
+        BEST_EFFORT, true, rclcpp::Duration(0, 0))
+    ) << "BEST_EFFORT switch stopped controller specified";
+
+    auto switch_future = std::async(
+      std::launch::async,
+      &controller_manager::ControllerManager::switch_controller, cm_,
+      start_controllers, stop_controllers,
+      STRICT, true, rclcpp::Duration(0, 0));
+
+    ASSERT_EQ(
+      std::future_status::timeout,
+      switch_future.wait_for(std::chrono::milliseconds(100))) <<
+      "switch_controller should be blocking until next update cycle";
+    {
+      ControllerManagerRunner cm_runner(this);
+      EXPECT_EQ(
+        controller_interface::return_type::OK,
+        switch_future.get()
+      );
+    }
+
+    ASSERT_EQ(
+      lifecycle_msgs::msg::State::PRIMARY_STATE_FINALIZED,
+      abstract_test_controller1.c->get_current_state().id());
+  }
 }
 
 TEST_F(TestLoadController, switch_multiple_controllers)
