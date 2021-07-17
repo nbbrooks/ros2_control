@@ -359,10 +359,10 @@ void generic_system_functional_test(std::string urdf, double offset = 0)
   hardware_interface::ResourceManager rm(urdf);
 
   // check is hardware is configured
-  std::unordered_map<std::string, rclcpp_lifecycle::State> status_map;
-  status_map = rm.get_components_states();
+  auto status_map = rm.get_components_status();
   EXPECT_EQ(
-    status_map["GenericSystem2dof"].label(), hardware_interface::lifecycle_state_names::INACTIVE);
+    status_map["GenericSystem2dof"].state.label(),
+    hardware_interface::lifecycle_state_names::INACTIVE);
 
   // Check initial values
   hardware_interface::LoanedStateInterface j1p_s = rm.claim_state_interface("joint1/position");
@@ -439,14 +439,16 @@ void generic_system_functional_test(std::string urdf, double offset = 0)
   ASSERT_EQ(0.88, j2v_c.get_value());
 
   rm.activate_components();
-  status_map = rm.get_components_states();
+  status_map = rm.get_components_status();
   EXPECT_EQ(
-    status_map["GenericSystem2dof"].label(), hardware_interface::lifecycle_state_names::ACTIVE);
+    status_map["GenericSystem2dof"].state.label(),
+    hardware_interface::lifecycle_state_names::ACTIVE);
 
   rm.deactivate_components();
-  status_map = rm.get_components_states();
+  status_map = rm.get_components_status();
   EXPECT_EQ(
-    status_map["GenericSystem2dof"].label(), hardware_interface::lifecycle_state_names::INACTIVE);
+    status_map["GenericSystem2dof"].state.label(),
+    hardware_interface::lifecycle_state_names::INACTIVE);
 }
 
 TEST_F(TestGenericSystem, generic_system_2dof_functionality)
