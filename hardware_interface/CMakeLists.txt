@@ -13,6 +13,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
@@ -36,6 +37,7 @@ ament_target_dependencies(
   hardware_interface
   control_msgs
   pluginlib
+  rclcpp_lifecycle
   rcutils
   rcpputils
 )
