@@ -284,6 +284,9 @@ TEST_F(TestGenericSystem, generic_system_2dof_symetric_interfaces)
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_ +
               ros2_control_test_assets::urdf_tail;
   hardware_interface::ResourceManager rm(urdf);
+  // Activate components to get all interfaces available
+  rm.configure_components();
+  rm.activate_components();
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());
@@ -313,6 +316,9 @@ TEST_F(TestGenericSystem, generic_system_2dof_asymetric_interfaces)
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_asymetric_ +
               ros2_control_test_assets::urdf_tail;
   hardware_interface::ResourceManager rm(urdf);
+  // Activate components to get all interfaces available
+  rm.configure_components();
+  rm.activate_components();
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());
@@ -357,7 +363,6 @@ TEST_F(TestGenericSystem, generic_system_2dof_asymetric_interfaces)
 void generic_system_functional_test(std::string urdf, double offset = 0)
 {
   hardware_interface::ResourceManager rm(urdf);
-
   // check is hardware is configured
   auto status_map = rm.get_components_status();
   EXPECT_EQ(
@@ -468,6 +473,9 @@ TEST_F(TestGenericSystem, generic_system_2dof_other_interfaces)
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_with_other_interface_ +
               ros2_control_test_assets::urdf_tail;
   hardware_interface::ResourceManager rm(urdf);
+  // Activate components to get all interfaces available
+  rm.configure_components();
+  rm.activate_components();
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());
@@ -549,6 +557,9 @@ TEST_F(TestGenericSystem, generic_system_2dof_sensor)
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_with_sensor_ +
               ros2_control_test_assets::urdf_tail;
   hardware_interface::ResourceManager rm(urdf);
+  // Activate components to get all interfaces available
+  rm.configure_components();
+  rm.activate_components();
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());
@@ -645,6 +656,9 @@ TEST_F(TestGenericSystem, generic_system_2dof_sensor)
 void test_generic_system_with_fake_sensor_commands(std::string urdf)
 {
   hardware_interface::ResourceManager rm(urdf);
+  // Activate components to get all interfaces available
+  rm.configure_components();
+  rm.activate_components();
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());
@@ -782,6 +796,9 @@ TEST_F(TestGenericSystem, generic_system_2dof_sensor_fake_command_True)
 void test_generic_system_with_mimic_joint(std::string urdf)
 {
   hardware_interface::ResourceManager rm(urdf);
+  // Activate components to get all interfaces available
+  rm.configure_components();
+  rm.activate_components();
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());
