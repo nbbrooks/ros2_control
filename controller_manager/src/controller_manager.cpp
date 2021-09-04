@@ -30,13 +30,7 @@ namespace controller_manager
 static constexpr const char * kControllerInterfaceName = "controller_interface";
 static constexpr const char * kControllerInterface = "controller_interface::ControllerInterface";
 
-inline bool is_controller_inactive(const controller_interface::ControllerInterface & controller)
-{
-  return controller.get_current_state().id() ==
-         lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE;
-}
-
-inline bool is_controller_active(controller_interface::ControllerInterface & controller)
+inline bool is_controller_running(controller_interface::ControllerInterface & controller)
 {
   return controller.get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE;
 }
@@ -495,8 +489,7 @@ controller_interface::return_type ControllerManager::switch_controller(
       std::find(start_request_.begin(), start_request_.end(), controller.info.name);
     bool in_start_list = start_list_it != start_request_.end();
 
-    const bool is_active = is_controller_active(*controller.c);
-    const bool is_inactive = is_controller_inactive(*controller.c);
+    const bool is_running = is_controller_running(*controller.c);
 
     auto handle_conflict = [&](const std::string & msg) {
       if (strictness == controller_manager_msgs::srv::SwitchController::Request::STRICT)

@@ -18,13 +18,11 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iterator>
 #include <limits>
 #include <string>
 #include <vector>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
-#include "rcutils/logging_macros.h"
 
 namespace fake_components
 {
@@ -57,8 +55,6 @@ CallbackReturn GenericSystem::on_init(const hardware_interface::HardwareInfo & i
   {
     state_following_offset_ = 0.0;
   }
-  // its extremlly unprobably that std::distance results int this value - therefore default
-  index_custom_interface_with_following_offset_ = std::numeric_limits<size_t>::max();
 
   // Initialize storage for standard interfaces
   initialize_storage_vectors(joint_commands_, joint_states_, standard_interfaces_);
@@ -112,11 +108,7 @@ CallbackReturn GenericSystem::on_init(const hardware_interface::HardwareInfo & i
         std::find(standard_interfaces_.begin(), standard_interfaces_.end(), interface.name) ==
         standard_interfaces_.end())
       {
-        if (std::find(other_interfaces_.begin(), other_interfaces_.end(), interface.name) ==
-          other_interfaces_.end())
-        {
-          other_interfaces_.emplace_back(interface.name);
-        }
+        other_interfaces_.emplace_back(interface.name);
       }
     }
     for (const auto & interface : joint.state_interfaces)
@@ -126,11 +118,7 @@ CallbackReturn GenericSystem::on_init(const hardware_interface::HardwareInfo & i
         std::find(standard_interfaces_.begin(), standard_interfaces_.end(), interface.name) ==
         standard_interfaces_.end())
       {
-        if (std::find(other_interfaces_.begin(), other_interfaces_.end(), interface.name) ==
-          other_interfaces_.end())
-        {
-          other_interfaces_.emplace_back(interface.name);
-        }
+        other_interfaces_.emplace_back(interface.name);
       }
     }
   }
@@ -251,8 +239,7 @@ return_type GenericSystem::read()
     if (!std::isnan(joint_commands_[POSITION_INTERFACE_INDEX][j]))
     {
       joint_states_[POSITION_INTERFACE_INDEX][j] =
-        joint_commands_[POSITION_INTERFACE_INDEX][j] +
-        (custom_interface_with_following_offset_.empty() ? position_state_following_offset_ : 0.0);
+        joint_commands_[POSITION_INTERFACE_INDEX][j] + state_following_offset_;
     }
   }
   // do loopback on all other interfaces - starts from 1 because 0 index is position interface
