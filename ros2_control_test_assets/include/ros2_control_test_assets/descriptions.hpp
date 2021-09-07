@@ -136,6 +136,7 @@ const auto hardware_resources =
       <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <command_interface name="max_velocity" />
     </joint>
   </ros2_control>
   <ros2_control name="TestSensorHardware" type="sensor">
@@ -157,10 +158,19 @@ const auto hardware_resources =
     <joint name="joint2">
       <command_interface name="velocity"/>
       <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="acceleration"/>
+      <command_interface name="max_acceleration" />
     </joint>
     <joint name="joint3">
       <command_interface name="velocity"/>
       <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="acceleration"/>
+    </joint>
+    <joint name="configuration">
+      <command_interface name="max_tcp_jerk"/>
+      <state_interface name="max_tcp_jerk"/>
     </joint>
   </ros2_control>
 )";
@@ -259,6 +269,29 @@ const auto minimal_robot_missing_state_keys_urdf =
 const auto minimal_robot_missing_command_keys_urdf =
   std::string(urdf_head) + std::string(hardware_resources_missing_command_keys) +
   std::string(urdf_tail);
+
+const auto TEST_ACTUATOR_HARDWARE_NAME = "TestActuatorHardware";
+const auto TEST_ACTUATOR_HARDWARE_TYPE = "actuator";
+const auto TEST_ACTUATOR_HARDWARE_CLASS_TYPE = "test_actuator";
+const auto TEST_ACTUATOR_HARDWARE_COMMAND_INTERFACES = {"joint1/position", "joint1/max_velocity"};
+const auto TEST_ACTUATOR_HARDWARE_STATE_INTERFACES = {
+  "joint1/position", "joint1/velocity", "joint1/some_unlisted_interface"};
+
+const auto TEST_SENSOR_HARDWARE_NAME = "TestSensorHardware";
+const auto TEST_SENSOR_HARDWARE_TYPE = "sensor";
+const auto TEST_SENSOR_HARDWARE_CLASS_TYPE = "test_sensor";
+const auto TEST_SENSOR_HARDWARE_COMMAND_INTERFACES = {""};
+const auto TEST_SENSOR_HARDWARE_STATE_INTERFACES = {"sensor1/velocity"};
+
+const auto TEST_SYSTEM_HARDWARE_NAME = "TestSystemHardware";
+const auto TEST_SYSTEM_HARDWARE_TYPE = "system";
+const auto TEST_SYSTEM_HARDWARE_CLASS_TYPE = "test_system";
+const auto TEST_SYSTEM_HARDWARE_COMMAND_INTERFACES = {
+  "joint2/velocity", "joint2/max_acceleration", "joint3/velocity", "configuration/max_tcp_jerk"};
+const auto TEST_SYSTEM_HARDWARE_STATE_INTERFACES = {
+  "joint2/position", "joint2/velocity",     "joint2/acceleration",       "joint3/position",
+  "joint3/velocity", "joint3/acceleration", "configuration/max_tcp_jerk"};
+
 }  // namespace ros2_control_test_assets
 
 #endif  // ROS2_CONTROL_TEST_ASSETS__DESCRIPTIONS_HPP_

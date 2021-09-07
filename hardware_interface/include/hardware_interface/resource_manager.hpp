@@ -15,16 +15,18 @@
 #ifndef HARDWARE_INTERFACE__RESOURCE_MANAGER_HPP_
 #define HARDWARE_INTERFACE__RESOURCE_MANAGER_HPP_
 
+#include <algorithm>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "hardware_interface/hardware_component_info.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/loaned_command_interface.hpp"
 #include "hardware_interface/loaned_state_interface.hpp"
-#include "hardware_interface/types/hardware_interface_status_values.hpp"
+#include "hardware_interface/types/hardware_interface_return_values.hpp"
 
 namespace hardware_interface
 {
@@ -89,11 +91,25 @@ public:
    */
   std::vector<std::string> state_interface_keys() const;
 
+  /// Returns all available state interfaces keys.
+  /**
+   * The keys are collected from the available list.
+   *
+   * \return Vector of strings, containing all available state interface names.
+   */
+  std::vector<std::string> available_state_interfaces() const;
+
   /// Checks whether a state interface is registered under the given key.
   /**
    * \return true if interface exist, false otherwise.
    */
   bool state_interface_exists(const std::string & key) const;
+
+  /// Checks whether a state interface is available under the given key.
+  /**
+   * \return true if interface is available, false otherwise.
+   */
+  bool state_interface_is_available(const std::string & name) const;
 
   /// Checks whether a command interface is already claimed.
   /**
@@ -125,12 +141,27 @@ public:
    */
   std::vector<std::string> command_interface_keys() const;
 
+  /// Returns all available command interfaces keys.
+  /**
+   * The keys are collected from the available list.
+   *
+   * \return vector of strings, containing all available command interface names.
+   */
+  std::vector<std::string> available_command_interfaces() const;
+
   /// Checks whether a command interface is registered under the given key.
   /**
    * \param[in] key string identifying the interface to check.
    * \return true if interface exist, false otherwise.
    */
   bool command_interface_exists(const std::string & key) const;
+
+  /// Checks whether a command interface is available under the given name.
+  /**
+   * \param[in] name string identifying the interface to check.
+   * \return true if interface is available, false otherwise.
+   */
+  bool command_interface_is_available(const std::string & interface) const;
 
   /// Return the number size_t of loaded actuator components.
   /**
@@ -188,9 +219,9 @@ public:
 
   /// Return status for all components.
   /**
-   * \return map of hardware names and their status
+   * \return map of hardware names and their status.
    */
-  std::unordered_map<std::string, status> get_components_status();
+  std::unordered_map<std::string, HardwareComponentInfo> get_components_status();
 
   /// Prepare the hardware components for a new command interface mode
   /**
@@ -201,7 +232,7 @@ public:
    * \note this is for non-realtime preparing for and accepting new command resource
    * combinations.
    * \note accept_command_resource_claim is called on all actuators and system components
-   * and hardware interfaces should return hardware_interface::return_type::SUCCESS
+   * and hardware interfaces should return hardware_interface::return_type::OK
    * by default
    * \param[in] start_interfaces vector of string identifiers for the command interfaces starting.
    * \param[in] stop_interfaces vector of string identifiers for the command interfaces stopping.
@@ -226,16 +257,72 @@ public:
     const std::vector<std::string> & start_interfaces,
     const std::vector<std::string> & stop_interfaces);
 
-  /// Start all loaded hardware components.
-  void start_components();
+  /// Configure hardware components.
+  /**
+   * Configure hardware components defined in the list. If empty, configure all components.
+   *
+   * \param[in] component_names vector of component names to configure. Default: empty.
+   * \return hardware_interface::retun_type::OK if all components are successfully configured and
+   *         hardware_interface::return_type::ERROR if at least one failed to configure.
+   */
+  return_type configure_components(const std::vector<std::string> & component_names = {});
 
-  /// Stops all loaded hardware components.
-  void stop_components();
+  /// Cleanup hardware components.
+  /**
+   * Cleanup hardware components defined in the list. If empty, cleanup all components.
+   *
+   * \param[in] component_names vector of component names to cleanup. Default: empty.
+   * \return hardware_interface::retun_type::OK if all components are successfully cleaned-up and
+   *         hardware_interface::return_type::ERROR if at least one failed to cleanup.
+   */
+  return_type cleanup_components(const std::vector<std::string> & component_names = {});
+
+  /// Shutdown hardware components.
+  /**
+   * Shutdown hardware components defined in the list. If empty, shutdown all components.
+   *
+   * \param[in] component_names vector of component names to shutdown. Default: empty.
+   * \return hardware_interface::retun_type::OK if all components are successfully shutdown and
+   *         hardware_interface::return_type::ERROR if at least one failed to shutdown.
+   */
+  return_type shutdown_components(const std::vector<std::string> & component_names = {});
+
+  /// Activate hardware components.
+  /**
+   * Activate hardware components defined in the list. If empty, activate all components.
+   *
+   * \param[in] component_names vector of component names to activate. Default: empty.
+   * \return hardware_interface::retun_type::OK if all components are successfully activated and
+   *         hardware_interface::return_type::ERROR if at least one failed to activate.
+   */
+  return_type activate_components(const std::vector<std::string> & component_names = {});
+
+  /// Deactivate running hardware components.
+  /**
+   * Deactivate hardware components defined in the list. If empty, deactivate all components.
+   *
+   * \param[in] component_names vector of component names to deactivate. Default: empty.
+   * \return hardware_interface::retun_type::OK if all components are successfully deactivated and
+   *         hardware_interface::return_type::ERROR if at least one failed to deactivate.
+   */
+  return_type deactivate_components(const std::vector<std::string> & component_names = {});
 
   /// Reads all loaded hardware components.
+  /**
+   * Reads from all active hardware components.
+   *
+   * Part of the real-time critical update loop.
+   * It is realtime-safe if used hadware interfaces are implemented adequately.
+   */
   void read();
 
   /// Write all loaded hardware components.
+  /**
+   * Writes to all active hardware components.
+   *
+   * Part of the real-time critical update loop.
+   * It is realtime-safe if used hadware interfaces are implemented adequately.
+   */
   void write();
 
 private:
@@ -245,7 +332,8 @@ private:
 
   std::unordered_map<std::string, bool> claimed_command_interface_map_;
 
-  mutable std::recursive_mutex resource_lock_;
+  mutable std::recursive_mutex resource_interfaces_lock_;
+  mutable std::recursive_mutex claimed_command_interfaces_lock_;
   std::unique_ptr<ResourceStorage> resource_storage_;
 };
 

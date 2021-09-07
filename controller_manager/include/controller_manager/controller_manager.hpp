@@ -24,15 +24,20 @@
 
 #include "controller_manager/controller_spec.hpp"
 #include "controller_manager/visibility_control.h"
+#include "controller_manager_msgs/srv/cleanup_hardware_component.hpp"
 #include "controller_manager_msgs/srv/configure_controller.hpp"
+#include "controller_manager_msgs/srv/configure_hardware_component.hpp"
 #include "controller_manager_msgs/srv/configure_start_controller.hpp"
 #include "controller_manager_msgs/srv/list_controller_types.hpp"
 #include "controller_manager_msgs/srv/list_controllers.hpp"
+#include "controller_manager_msgs/srv/list_hardware_components.hpp"
 #include "controller_manager_msgs/srv/list_hardware_interfaces.hpp"
 #include "controller_manager_msgs/srv/load_configure_controller.hpp"
 #include "controller_manager_msgs/srv/load_controller.hpp"
 #include "controller_manager_msgs/srv/load_start_controller.hpp"
+#include "controller_manager_msgs/srv/manage_hardware_activity.hpp"
 #include "controller_manager_msgs/srv/reload_controller_libraries.hpp"
+#include "controller_manager_msgs/srv/shutdown_hardware_component.hpp"
 #include "controller_manager_msgs/srv/switch_controller.hpp"
 #include "controller_manager_msgs/srv/unload_controller.hpp"
 
@@ -66,6 +71,9 @@ public:
 
   CONTROLLER_MANAGER_PUBLIC
   virtual ~ControllerManager() = default;
+
+  CONTROLLER_MANAGER_PUBLIC
+  void init_resource_manager();
 
   CONTROLLER_MANAGER_PUBLIC
   controller_interface::ControllerInterfaceSharedPtr load_controller(
@@ -169,11 +177,6 @@ protected:
     std::shared_ptr<controller_manager_msgs::srv::ListControllers::Response> response);
 
   CONTROLLER_MANAGER_PUBLIC
-  void list_controller_types_srv_cb(
-    const std::shared_ptr<controller_manager_msgs::srv::ListControllerTypes::Request> request,
-    std::shared_ptr<controller_manager_msgs::srv::ListControllerTypes::Response> response);
-
-  CONTROLLER_MANAGER_PUBLIC
   void list_hardware_interfaces_srv_cb(
     const std::shared_ptr<controller_manager_msgs::srv::ListHardwareInterfaces::Request> request,
     std::shared_ptr<controller_manager_msgs::srv::ListHardwareInterfaces::Response> response);
@@ -217,6 +220,37 @@ protected:
   void unload_controller_service_cb(
     const std::shared_ptr<controller_manager_msgs::srv::UnloadController::Request> request,
     std::shared_ptr<controller_manager_msgs::srv::UnloadController::Response> response);
+
+  CONTROLLER_MANAGER_PUBLIC
+  void list_controller_types_srv_cb(
+    const std::shared_ptr<controller_manager_msgs::srv::ListControllerTypes::Request> request,
+    std::shared_ptr<controller_manager_msgs::srv::ListControllerTypes::Response> response);
+
+  CONTROLLER_MANAGER_PUBLIC
+  void list_hardware_components_srv_cb(
+    const std::shared_ptr<controller_manager_msgs::srv::ListHardwareComponents::Request> request,
+    std::shared_ptr<controller_manager_msgs::srv::ListHardwareComponents::Response> response);
+
+  CONTROLLER_MANAGER_PUBLIC
+  void configure_hardware_component_srv_cb(
+    const std::shared_ptr<controller_manager_msgs::srv::ConfigureHardwareComponent::Request>
+      request,
+    std::shared_ptr<controller_manager_msgs::srv::ConfigureHardwareComponent::Response> response);
+
+  CONTROLLER_MANAGER_PUBLIC
+  void cleanup_hardware_component_srv_cb(
+    const std::shared_ptr<controller_manager_msgs::srv::CleanupHardwareComponent::Request> request,
+    std::shared_ptr<controller_manager_msgs::srv::CleanupHardwareComponent::Response> response);
+
+  CONTROLLER_MANAGER_PUBLIC
+  void shutdown_hardware_component_srv_cb(
+    const std::shared_ptr<controller_manager_msgs::srv::ShutdownHardwareComponent::Request> request,
+    std::shared_ptr<controller_manager_msgs::srv::ShutdownHardwareComponent::Response> response);
+
+  CONTROLLER_MANAGER_PUBLIC
+  void manage_hardware_activity_srv_cb(
+    const std::shared_ptr<controller_manager_msgs::srv::ManageHardwareActivity::Request> request,
+    std::shared_ptr<controller_manager_msgs::srv::ManageHardwareActivity::Response> response);
 
 private:
   std::vector<std::string> get_controller_names();
@@ -314,8 +348,6 @@ private:
     list_controllers_service_;
   rclcpp::Service<controller_manager_msgs::srv::ListControllerTypes>::SharedPtr
     list_controller_types_service_;
-  rclcpp::Service<controller_manager_msgs::srv::ListHardwareInterfaces>::SharedPtr
-    list_hardware_interfaces_service_;
   rclcpp::Service<controller_manager_msgs::srv::LoadController>::SharedPtr load_controller_service_;
   rclcpp::Service<controller_manager_msgs::srv::ConfigureController>::SharedPtr
     configure_controller_service_;
@@ -331,6 +363,19 @@ private:
     switch_controller_service_;
   rclcpp::Service<controller_manager_msgs::srv::UnloadController>::SharedPtr
     unload_controller_service_;
+
+  rclcpp::Service<controller_manager_msgs::srv::ListHardwareComponents>::SharedPtr
+    list_hardware_components_service_;
+  rclcpp::Service<controller_manager_msgs::srv::ListHardwareInterfaces>::SharedPtr
+    list_hardware_interfaces_service_;
+  rclcpp::Service<controller_manager_msgs::srv::ConfigureHardwareComponent>::SharedPtr
+    configure_hardware_component_service_;
+  rclcpp::Service<controller_manager_msgs::srv::CleanupHardwareComponent>::SharedPtr
+    cleanup_hardware_component_service_;
+  rclcpp::Service<controller_manager_msgs::srv::ShutdownHardwareComponent>::SharedPtr
+    shutdown_hardware_component_service_;
+  rclcpp::Service<controller_manager_msgs::srv::ManageHardwareActivity>::SharedPtr
+    manage_hardware_activity_service_;
 
   std::vector<std::string> start_request_, stop_request_;
   std::vector<std::string> start_command_interface_request_, stop_command_interface_request_;
