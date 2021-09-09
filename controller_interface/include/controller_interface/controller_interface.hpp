@@ -108,11 +108,13 @@ public:
    * For use in all components that inherit from ControllerInterface
    */
   template <typename ParameterT>
-  auto auto_declare(const std::string & name, const ParameterT & default_value)
+  auto auto_declare(const std::string & name, const ParameterT & default_value, bool dynamic_typing = false)
   {
     if (!node_->has_parameter(name))
     {
-      return node_->declare_parameter<ParameterT>(name, default_value);
+      rcl_interfaces::msg::ParameterDescriptor descriptor;
+      descriptor.dynamic_typing = dynamic_typing;
+      return node_->declare_parameter<ParameterT>(name, default_value, descriptor);
     }
     else
     {
